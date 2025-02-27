@@ -1,0 +1,24 @@
+{
+  "address": "Test address headquarter",
+  "bankName": "Test Bank",
+  "countryIS02": "TT",
+  "countryName": "Test Country",
+  "isHeadquarter": true,
+  "swiftCode": "12345678XXX",
+  "branches": [
+    {
+      "address": "Test address branch 1",
+      "bankName": "Test Bank",
+      "countryIS02": "TT",
+      "isHeadquarter": false,
+      "swiftCode": "12345678001"
+    },
+    {
+      "address": "Test address branch 2",
+      "bankName": "Test Bank",
+      "countryIS02": "TT",
+      "isHeadquarter": false,
+      "swiftCode": "12345678002"
+    }
+  ]
+}

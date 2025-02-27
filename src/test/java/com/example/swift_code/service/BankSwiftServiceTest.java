@@ -13,6 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -86,5 +89,47 @@ class BankSwiftServiceTest {
 
         verify(repository, times(1)).existsById(swiftCode);
         verify(repository, never()).deleteById(swiftCode);
+    }
+
+    @Test
+    void getBankSwiftDto_whenSwiftCodeFoundAndBranch_shouldReturnDto() {
+        String swiftCode = "12345678XXX";
+        BankSwift bankSwift = new BankSwift();
+        bankSwift.setSwiftCode(swiftCode);
+
+        when(repository.findById(swiftCode)).thenReturn(Optional.of(bankSwift));
+        when(mapper.toDTOBranch(bankSwift)).thenReturn(new BankSwiftDto());
+
+        service.getBankSwiftDto(swiftCode);
+
+        verify(repository, times(1)).findById(swiftCode);
+        verify(mapper, times(1)).toDTOBranch(bankSwift);
+    }
+
+    @Test
+    void getBankSwiftDto_whenSwiftCodeFoundAndHeadquarter_shouldReturnDto() {
+        String swiftCode = "12345678XXX";
+        BankSwift bankSwift = new BankSwift();
+        bankSwift.setSwiftCode(swiftCode);
+        bankSwift.setHeadquarter(true);
+
+        when(repository.findById(swiftCode)).thenReturn(Optional.of(bankSwift));
+        when(mapper.toDTOHeadquarter(bankSwift)).thenReturn(new BankSwiftDto());
+        when(repository.findBySwiftCodeStartingWithAndSwiftCodeNot("12345678", swiftCode)).thenReturn(List.of(new BankSwift()));
+        when(mapper.toDTOReduced(any(BankSwift.class))).thenReturn(new BankSwiftDto());
+
+        service.getBankSwiftDto(swiftCode);
+
+        verify(repository, times(1)).findById(swiftCode);
+        verify(mapper, times(1)).toDTOHeadquarter(bankSwift);
+        verify(repository, times(1)).findBySwiftCodeStartingWithAndSwiftCodeNot("12345678", swiftCode);
+        verify(mapper, times(1)).toDTOReduced(any(BankSwift.class));
+    }
+
+    @Test
+    void getBankSwiftDto_whenSwiftCodeNotFound_shouldThrowBankSwiftNotFoundException() {
+        String swiftCode = "12345678XXX";
+        when(repository.findById(swiftCode)).thenReturn(Optional.empty());
+        assertThrows(BankSwiftNotFoundException.class, () -> service.getBankSwiftDto(swiftCode));
     }
 }

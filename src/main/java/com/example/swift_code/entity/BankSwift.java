@@ -17,7 +17,7 @@ public class BankSwift {
     private String swiftCode;
 
     @NotBlank
-    private String countryISO2;
+    private String countryIS02;
 
     @NotBlank
     private String countryName;

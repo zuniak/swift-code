@@ -5,6 +5,7 @@ import com.example.swift_code.exceptions.BankSwiftNotFoundException;
 import com.example.swift_code.exceptions.BankSwiftValidationException;
 import com.example.swift_code.service.BankSwiftService;
 import com.example.swift_code.validationgroups.BankBranch;
+import com.example.swift_code.validationgroups.BankHeadquarter;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,5 +95,77 @@ class BankSwiftControllerTest {
         assertEquals(message, exception.getMessage());
 
         verify(service, times(1)).deleteBankSwift(swiftCode);
+    }
+
+    @Test
+    void getBankSwift_whenValidHeadquarter_shouldReturnOk() {
+        String swiftCode = "12345678XXX";
+        BankSwiftDto bankSwiftDto = new BankSwiftDto();
+        bankSwiftDto.setHeadquarter(true);
+
+        when(service.getBankSwiftDto(swiftCode)).thenReturn(bankSwiftDto);
+        when(validator.validate(bankSwiftDto, BankHeadquarter.class)).thenReturn(Set.of());
+
+        ResponseEntity<BankSwiftDto> response = controller.getBankSwift(swiftCode);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(bankSwiftDto, response.getBody());
+
+        verify(service, times(1)).getBankSwiftDto(swiftCode);
+        verify(validator, times(1)).validate(bankSwiftDto, BankHeadquarter.class);
+    }
+
+    @Test
+    void getBankSwift_whenInvalidHeadquarter_shouldThrowBankSwiftValidationException() {
+        String swiftCode = "12345678XXX";
+        BankSwiftDto bankSwiftDto = new BankSwiftDto();
+        bankSwiftDto.setHeadquarter(true);
+
+        when(service.getBankSwiftDto(swiftCode)).thenReturn(bankSwiftDto);
+
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<BankSwiftDto> violation = mock(ConstraintViolation.class);
+        when(validator.validate(bankSwiftDto, BankHeadquarter.class)).thenReturn(Set.of(violation));
+
+        assertThrows(BankSwiftValidationException.class, () -> controller.getBankSwift(swiftCode));
+
+        verify(service, times(1)).getBankSwiftDto(swiftCode);
+        verify(validator, times(1)).validate(bankSwiftDto, BankHeadquarter.class);
+    }
+
+    @Test
+    void getBankSwift_whenValidBranch_shouldReturnOk() {
+        String swiftCode = "12345678XXX";
+        BankSwiftDto bankSwiftDto = new BankSwiftDto();
+        bankSwiftDto.setHeadquarter(false);
+
+        when(service.getBankSwiftDto(swiftCode)).thenReturn(bankSwiftDto);
+        when(validator.validate(bankSwiftDto, BankBranch.class)).thenReturn(Set.of());
+
+        ResponseEntity<BankSwiftDto> response = controller.getBankSwift(swiftCode);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(bankSwiftDto, response.getBody());
+
+        verify(service, times(1)).getBankSwiftDto(swiftCode);
+        verify(validator, times(1)).validate(bankSwiftDto, BankBranch.class);
+    }
+
+    @Test
+    void getBankSwift_whenInvalidBranch_shouldThrowBankSwiftValidationException() {
+        String swiftCode = "12345678XXX";
+        BankSwiftDto bankSwiftDto = new BankSwiftDto();
+        bankSwiftDto.setHeadquarter(false);
+
+        when(service.getBankSwiftDto(swiftCode)).thenReturn(bankSwiftDto);
+
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<BankSwiftDto> violation = mock(ConstraintViolation.class);
+        when(validator.validate(bankSwiftDto, BankBranch.class)).thenReturn(Set.of(violation));
+
+        assertThrows(BankSwiftValidationException.class, () -> controller.getBankSwift(swiftCode));
+
+        verify(service, times(1)).getBankSwiftDto(swiftCode);
+        verify(validator, times(1)).validate(bankSwiftDto, BankBranch.class);
     }
 }

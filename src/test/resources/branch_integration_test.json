@@ -1,0 +1,8 @@
+{
+  "address": "Test address branch 1",
+  "bankName": "Test Bank",
+  "countryIS02": "TT",
+  "countryName": "Test Country",
+  "isHeadquarter": false,
+  "swiftCode": "12345678001"
+}
