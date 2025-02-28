@@ -4,14 +4,12 @@ import com.example.swift_code.exceptions.BankSwiftDuplicateException;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
 import com.example.swift_code.exceptions.BankSwiftValidationException;
 import com.example.swift_code.exceptions.NoCodesFoundException;
-import jakarta.validation.ConstraintViolation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,9 +17,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleBankSwiftValidationException(BankSwiftValidationException exception) {
         String message = exception.getMessage();
 
-        String violationMessage = exception.getViolations().stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining(" "));
+        String violationMessage = exception.getViolationMessage();
 
         String responseMessage;
 

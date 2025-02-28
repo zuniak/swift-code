@@ -4,9 +4,13 @@ import com.example.swift_code.dto.BankSwiftDto;
 import com.example.swift_code.entity.BankSwift;
 import com.example.swift_code.exceptions.BankSwiftDuplicateException;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
+import com.example.swift_code.exceptions.BankSwiftValidationException;
 import com.example.swift_code.exceptions.NoCodesFoundException;
 import com.example.swift_code.mapper.BankSwiftMapper;
 import com.example.swift_code.repository.BankSwiftRepository;
+import com.example.swift_code.validationgroups.BankBranch;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,6 +35,9 @@ class BankSwiftServiceTest {
 
     @Mock
     BankSwiftMapper mapper;
+
+    @Mock
+    Validator validator;
 
     @InjectMocks
     BankSwiftService service;
@@ -157,5 +166,22 @@ class BankSwiftServiceTest {
         assertThrows(NoCodesFoundException.class, () -> service.getAllCountryCodes(countryIS02));
 
         verify(repository, times(1)).findAllByCountryIS02(countryIS02);
+    }
+
+    @Test
+    void downloadAndSaveBankSwiftData_shouldDownloadAndSaveData() throws IOException {
+        when(validator.validate(any())).thenReturn(Set.of());
+        service.downloadAndSaveBankSwiftData();
+        verify(validator, times(1061)).validate(any());
+        verify(repository, times(1)).saveAll(any());
+    }
+
+    @Test
+    void downloadAndSaveBankSwiftData_whenValidationFails_shouldThrowBankSwiftValidationException() throws IOException {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+        when(validator.validate(any())).thenReturn(Set.of(violation));
+        assertThrows(BankSwiftValidationException.class, () -> service.downloadAndSaveBankSwiftData());
+        verify(validator, times(1)).validate(any());
     }
 }

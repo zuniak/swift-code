@@ -21,7 +21,6 @@ import java.util.List;
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder({"address", "bankName", "countryIS02", "countryName", "isHeadquarter", "swiftCode", "branches"})
 public class BankSwiftDto {
-    @NotBlank(groups = {BankBranch.class, BankHeadquarter.class, BankInfoReduced.class}, message = "Address is mandatory.")
     private String address;
 
     @NotBlank(groups = {BankBranch.class, BankHeadquarter.class, BankInfoReduced.class}, message = "Bank name is mandatory.")

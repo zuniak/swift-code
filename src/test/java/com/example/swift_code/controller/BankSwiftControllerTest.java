@@ -11,7 +11,6 @@ import com.example.swift_code.validationgroups.BankHeadquarter;
 import com.example.swift_code.validationgroups.BankInfoReduced;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import jakarta.validation.groups.Default;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -214,5 +213,26 @@ class BankSwiftControllerTest {
 
         verify(service, times(1)).getAllCountryCodes(countryIS02);
         verify(validator, times(1)).validate(any(), any());
+    }
+
+    @Test
+    void uploadData_whenValidInput_shouldReturnOk() throws Exception {
+        doNothing().when(service).downloadAndSaveBankSwiftData();
+        ResponseEntity<Map<String, String>> response = controller.uploadData();
+
+        Map<String, String> expectedResponse = Map.of("message", "SWIFT codes uploaded successfully.");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedResponse, response.getBody());
+        verify(service, times(1)).downloadAndSaveBankSwiftData();
+    }
+
+    @Test
+    void uploadData_whenInvalidInput_shouldThrowBankSwiftValidationException() throws Exception {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+        doThrow(new BankSwiftValidationException("Validation failed", Set.of(violation))).when(service).downloadAndSaveBankSwiftData();
+
+        assertThrows(BankSwiftValidationException.class, () -> controller.uploadData());
+        verify(service, times(1)).downloadAndSaveBankSwiftData();
     }
 }

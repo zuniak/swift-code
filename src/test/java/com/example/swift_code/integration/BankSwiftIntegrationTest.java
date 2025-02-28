@@ -58,14 +58,14 @@ public class BankSwiftIntegrationTest {
     @Test
     public void addBankSwift_whenInvalidInput_shouldReturnBadRequest() throws Exception {
         Map<String, String> input = Map.of("address", "",
-                "bankName", "Test Bank",
+                "bankName", "",
                 "countryIS02", "TT",
                 "countryName", "Test Country",
                 "isHeadquarter", "true",
                 "swiftCode", "TESTXXX");
         String jsonInput = new JSONObject(input).toString();
 
-        Map<String, String> expectedResponse = Map.of("message", "Invalid input SWIFT code DTO format BankBranch: Address is mandatory.");
+        Map<String, String> expectedResponse = Map.of("message", "Invalid input SWIFT code DTO format BankBranch: Bank name is mandatory.");
         String jsonResponse = new JSONObject(expectedResponse).toString();
 
         mockMvc.perform(post("/v1/swift-codes")
@@ -208,6 +208,16 @@ public class BankSwiftIntegrationTest {
 
         mockMvc.perform(get("/v1/swift-codes/country/" + countryIS02))
                 .andExpect(status().isNotFound())
+                .andExpect(content().json(jsonResponse));
+    }
+
+    @Test
+    public void uploadData_whenValidInput_shouldReturnOk() throws Exception {
+        Map<String, String> expectedResponse = Map.of("message", "SWIFT codes uploaded successfully.");
+        String jsonResponse = new JSONObject(expectedResponse).toString();
+
+        mockMvc.perform(post("/v1/swift-codes/upload"))
+                .andExpect(status().isOk())
                 .andExpect(content().json(jsonResponse));
     }
 }

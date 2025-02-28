@@ -14,20 +14,20 @@ import lombok.NoArgsConstructor;
 @Data
 public class BankSwift {
     @Id
+    @NotBlank(message = "SWIFT code is mandatory")
     private String swiftCode;
 
-    @NotBlank
+    @NotBlank(message = "Country ISO2 code is mandatory")
     private String countryIS02;
 
-    @NotBlank
+    @NotBlank(message = "Country name is mandatory")
     private String countryName;
 
-    @NotBlank
+    @NotBlank(message = "Bank name is mandatory")
     private String bankName;
 
-    @NotBlank
     private String address;
 
-    @NotNull
+    @NotNull(message = "Headquarter flag is mandatory")
     private boolean isHeadquarter;
 }

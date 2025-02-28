@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,5 +65,11 @@ public class BankSwiftController {
         if (!violations.isEmpty()) {
             throw new BankSwiftValidationException("Invalid SWIFT code DTO format " + validationGroup.getSimpleName(), violations);
         }
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadData() throws IOException {
+        service.downloadAndSaveBankSwiftData();
+        return ResponseEntity.ok(Map.of("message", "SWIFT codes uploaded successfully."));
     }
 }
