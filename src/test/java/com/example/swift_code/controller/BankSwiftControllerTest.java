@@ -1,13 +1,17 @@
 package com.example.swift_code.controller;
 
 import com.example.swift_code.dto.BankSwiftDto;
+import com.example.swift_code.dto.CountryBankSwiftDto;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
 import com.example.swift_code.exceptions.BankSwiftValidationException;
+import com.example.swift_code.exceptions.NoCodesFoundException;
 import com.example.swift_code.service.BankSwiftService;
 import com.example.swift_code.validationgroups.BankBranch;
 import com.example.swift_code.validationgroups.BankHeadquarter;
+import com.example.swift_code.validationgroups.BankInfoReduced;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import jakarta.validation.groups.Default;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -167,5 +172,47 @@ class BankSwiftControllerTest {
 
         verify(service, times(1)).getBankSwiftDto(swiftCode);
         verify(validator, times(1)).validate(bankSwiftDto, BankBranch.class);
+    }
+
+    @Test
+    void getAllCountryCodes_whenValidCountryBankSwiftDto_shouldReturnOk() {
+        String countryIS02 = "TT";
+        CountryBankSwiftDto countryDto = new CountryBankSwiftDto("", "", List.of());
+        BankSwiftDto branchDto = new BankSwiftDto();
+        countryDto.setBranches(List.of(branchDto));
+
+        when(service.getAllCountryCodes(countryIS02)).thenReturn(countryDto);
+        when(validator.validate(branchDto, BankInfoReduced.class)).thenReturn(Set.of());
+
+        controller.getAllCountryCodes(countryIS02);
+
+        verify(service, times(1)).getAllCountryCodes(countryIS02);
+        verify(validator, times(1)).validate(branchDto, BankInfoReduced.class);
+    }
+
+    @Test
+    void getAllCountryCodes_whenNoCodesFound_shouldThrowsNotFoundException() {
+        String countryIS02 = "TT";
+        when(service.getAllCountryCodes(countryIS02)).thenThrow(new NoCodesFoundException("No codes found."));
+
+        assertThrows(NoCodesFoundException.class, () -> controller.getAllCountryCodes(countryIS02));
+    }
+
+    @Test
+    void getAllCountryCodes_whenInvalidBankSwiftDto_shouldThrowBankSwiftValidationException() {
+        String countryIS02 = "TT";
+        CountryBankSwiftDto countryDto = new CountryBankSwiftDto("", "", List.of());
+        BankSwiftDto branchDto = new BankSwiftDto();
+        countryDto.setBranches(List.of(branchDto));
+
+        when(service.getAllCountryCodes(countryIS02)).thenReturn(countryDto);
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<BankSwiftDto> violation = mock(ConstraintViolation.class);
+        when(validator.validate(branchDto, BankInfoReduced.class)).thenReturn(Set.of(violation));
+
+        assertThrows(BankSwiftValidationException.class, () -> controller.getAllCountryCodes(countryIS02));
+
+        verify(service, times(1)).getAllCountryCodes(countryIS02);
+        verify(validator, times(1)).validate(any(), any());
     }
 }

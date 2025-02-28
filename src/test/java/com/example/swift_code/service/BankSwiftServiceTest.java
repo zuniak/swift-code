@@ -4,6 +4,7 @@ import com.example.swift_code.dto.BankSwiftDto;
 import com.example.swift_code.entity.BankSwift;
 import com.example.swift_code.exceptions.BankSwiftDuplicateException;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
+import com.example.swift_code.exceptions.NoCodesFoundException;
 import com.example.swift_code.mapper.BankSwiftMapper;
 import com.example.swift_code.repository.BankSwiftRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,5 +132,30 @@ class BankSwiftServiceTest {
         String swiftCode = "12345678XXX";
         when(repository.findById(swiftCode)).thenReturn(Optional.empty());
         assertThrows(BankSwiftNotFoundException.class, () -> service.getBankSwiftDto(swiftCode));
+    }
+
+    @Test
+    void getAllCountryCodes_whenCodesExist_shouldReturnCountryBankSwiftDto() {
+        String countryIS02 = "TT";
+        BankSwift entity = new BankSwift();
+        BankSwiftDto dto = new BankSwiftDto();
+
+        when(repository.findAllByCountryIS02(countryIS02)).thenReturn(List.of(entity));
+        when(mapper.toDTOReduced(entity)).thenReturn(dto);
+
+        service.getAllCountryCodes("TT");
+
+        verify(repository, times(1)).findAllByCountryIS02(countryIS02);
+        verify(mapper, times(1)).toDTOReduced(entity);
+    }
+
+    @Test
+    void getAllCountryCodes_whenCodesNotExist_shouldThrowNoCodesFoundException() {
+        String countryIS02 = "TT";
+        when(repository.findAllByCountryIS02(anyString())).thenReturn(List.of());
+
+        assertThrows(NoCodesFoundException.class, () -> service.getAllCountryCodes(countryIS02));
+
+        verify(repository, times(1)).findAllByCountryIS02(countryIS02);
     }
 }

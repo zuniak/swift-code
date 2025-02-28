@@ -30,7 +30,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<Map<String, String>> response = globalExceptionHandler.handleBankSwiftValidationException(exception);
 
-        Map<String, String> expectedResponse = Map.of("message", "Validation failed:  Violation message 1.");
+        Map<String, String> expectedResponse = Map.of("message", "Validation failed: Violation message 1.");
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(expectedResponse, response.getBody());

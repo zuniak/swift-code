@@ -1,9 +1,11 @@
 package com.example.swift_code.service;
 
 import com.example.swift_code.dto.BankSwiftDto;
+import com.example.swift_code.dto.CountryBankSwiftDto;
 import com.example.swift_code.entity.BankSwift;
 import com.example.swift_code.exceptions.BankSwiftDuplicateException;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
+import com.example.swift_code.exceptions.NoCodesFoundException;
 import com.example.swift_code.mapper.BankSwiftMapper;
 import com.example.swift_code.repository.BankSwiftRepository;
 import lombok.AllArgsConstructor;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -40,8 +41,7 @@ public class BankSwiftService {
 
             if (bankSwift.isHeadquarter()){
                 return getHeadquarterDto(bankSwift);
-            }
-            else {
+            } else {
                 return mapper.toDTOBranch(bankSwift);
             }
         }
@@ -60,6 +60,17 @@ public class BankSwiftService {
         return repository.findBySwiftCodeStartingWithAndSwiftCodeNot(baseCode, swiftcode)
                 .stream()
                 .map(mapper::toDTOReduced)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    public CountryBankSwiftDto getAllCountryCodes(String countryIS02) {
+        List<BankSwift> branches = repository.findAllByCountryIS02(countryIS02);
+        if (branches.isEmpty()){
+            throw new NoCodesFoundException("No SWIFT codes found for country: " + countryIS02);
+        }
+        String countryName = branches.get(0).getCountryName();
+        List<BankSwiftDto> branchesDto = branches.stream().map(mapper::toDTOReduced).toList();
+
+        return new CountryBankSwiftDto(countryIS02, countryName, branchesDto);
     }
 }

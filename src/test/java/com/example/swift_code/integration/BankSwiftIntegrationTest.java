@@ -65,7 +65,7 @@ public class BankSwiftIntegrationTest {
                 "swiftCode", "TESTXXX");
         String jsonInput = new JSONObject(input).toString();
 
-        Map<String, String> expectedResponse = Map.of("message", "SWIFT code validation failed:  Address is mandatory.");
+        Map<String, String> expectedResponse = Map.of("message", "Invalid input SWIFT code DTO format BankBranch: Address is mandatory.");
         String jsonResponse = new JSONObject(expectedResponse).toString();
 
         mockMvc.perform(post("/v1/swift-codes")
@@ -158,6 +158,15 @@ public class BankSwiftIntegrationTest {
                 "Test address branch 2",
                 false);
         repository.save(branch2);
+
+        BankSwift other = new BankSwift(
+                "AAAAAAAA001",
+                "AA",
+                "Test Country",
+                "Test Bank",
+                "Test address branch 1",
+                false);
+        repository.save(other);
     }
 
     @Test
@@ -178,5 +187,27 @@ public class BankSwiftIntegrationTest {
         mockMvc.perform(get("/v1/swift-codes/" + swiftCode))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedResponse));
+    }
+
+    @Test
+    public void getAllCountryCodes_whenValidInput_shouldReturnOk() throws Exception {
+        setUpRepository();
+        String countryIS02 = "TT";
+        String expectedResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/country_integration_test.json")));
+        mockMvc.perform(get("/v1/swift-codes/country/" + countryIS02))
+                .andExpect(status().isOk())
+                .andExpect(content().json(expectedResponse));
+    }
+
+    @Test
+    public void getAllCountryCodes_whenNoCodesFound_shouldReturnNotFound() throws Exception {
+        setUpRepository();
+        String countryIS02 = "XX";
+        Map<String, String> expectedResponse = Map.of("message", "No SWIFT codes found for country: XX");
+        String jsonResponse = new JSONObject(expectedResponse).toString();
+
+        mockMvc.perform(get("/v1/swift-codes/country/" + countryIS02))
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(jsonResponse));
     }
 }

@@ -3,6 +3,7 @@ package com.example.swift_code.controller;
 import com.example.swift_code.exceptions.BankSwiftDuplicateException;
 import com.example.swift_code.exceptions.BankSwiftNotFoundException;
 import com.example.swift_code.exceptions.BankSwiftValidationException;
+import com.example.swift_code.exceptions.NoCodesFoundException;
 import jakarta.validation.ConstraintViolation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class GlobalExceptionHandler {
 
         String violationMessage = exception.getViolations().stream()
                 .map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining("   "));
+                .collect(Collectors.joining(" "));
 
         String responseMessage;
 
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
         } else if (violationMessage.isEmpty()) {
             responseMessage = message;
         } else {
-            responseMessage = message + ":  " + violationMessage;
+            responseMessage = message + ": " + violationMessage;
         }
         return ResponseEntity.badRequest().body(Map.of("message", responseMessage));
     }
@@ -44,5 +45,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BankSwiftDuplicateException.class)
     public ResponseEntity<Map<String, String>> handleBankSwiftDuplicateException(Exception exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", exception.getMessage()));
+    }
+
+    @ExceptionHandler(NoCodesFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoCodesFoundException(NoCodesFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", exception.getMessage()));
     }
 }

@@ -1,10 +1,12 @@
 package com.example.swift_code.controller;
 
 import com.example.swift_code.dto.BankSwiftDto;
+import com.example.swift_code.dto.CountryBankSwiftDto;
 import com.example.swift_code.exceptions.BankSwiftValidationException;
 import com.example.swift_code.service.BankSwiftService;
 import com.example.swift_code.validationgroups.BankBranch;
 import com.example.swift_code.validationgroups.BankHeadquarter;
+import com.example.swift_code.validationgroups.BankInfoReduced;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
@@ -26,7 +28,7 @@ public class BankSwiftController {
     public ResponseEntity<Map<String, String>> addBankSwift(@RequestBody BankSwiftDto bankSwiftDto) {
         Set<ConstraintViolation<BankSwiftDto>> violations = validator.validate(bankSwiftDto, BankBranch.class);
         if (!violations.isEmpty()) {
-            throw new BankSwiftValidationException("SWIFT code validation failed", violations);
+            throw new BankSwiftValidationException("Invalid input SWIFT code DTO format " + BankBranch.class.getSimpleName(), violations);
         }
         service.addBankSwift(bankSwiftDto);
 
@@ -50,10 +52,17 @@ public class BankSwiftController {
         return ResponseEntity.ok(bankSwiftDto);
     }
 
+    @GetMapping("/country/{countryIS02}")
+    public ResponseEntity<CountryBankSwiftDto> getAllCountryCodes(@PathVariable String countryIS02){
+        CountryBankSwiftDto countryBankSwiftDto = service.getAllCountryCodes(countryIS02);
+        countryBankSwiftDto.getBranches().forEach(branchDto -> validateDto(branchDto, BankInfoReduced.class));
+        return ResponseEntity.ok(countryBankSwiftDto);
+    }
+
     private void validateDto(BankSwiftDto bankSwiftDto, Class<?> validationGroup) {
         Set<ConstraintViolation<BankSwiftDto>> violations = validator.validate(bankSwiftDto, validationGroup);
         if (!violations.isEmpty()) {
-            throw new BankSwiftValidationException("Invalid SWIFT code DTO format", violations);
+            throw new BankSwiftValidationException("Invalid SWIFT code DTO format " + validationGroup.getSimpleName(), violations);
         }
     }
 }
