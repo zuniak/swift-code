@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    container_name: swift_db
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-db
+    restart: always
+    environment:
+      POSTGRES_USER: swiftuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: swiftapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my_network
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-app
+    container_name: swift_app
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/swiftapp
+      SPRING_DATASOURCE_USERNAME: swiftuser
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+    networks:
+      - my_network
+
+networks:
+  my_network:
