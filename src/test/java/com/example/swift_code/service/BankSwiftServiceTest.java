@@ -8,7 +8,6 @@ import com.example.swift_code.exceptions.BankSwiftValidationException;
 import com.example.swift_code.exceptions.NoCodesFoundException;
 import com.example.swift_code.mapper.BankSwiftMapper;
 import com.example.swift_code.repository.BankSwiftRepository;
-import com.example.swift_code.validationgroups.BankBranch;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
